@@ -10,7 +10,7 @@ app.use('/public', express.static(__dirname + '/public'));
 app.use(bodyParser.urlencoded({
     extended: false
 }))
-
+console.log(process.env.MONGODB_URI)
 app.use(methodOverride('_method'));
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
