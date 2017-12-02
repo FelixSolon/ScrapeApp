@@ -12,7 +12,7 @@ if(scraper){
 
 //Web page entry
 router.get('/', function(req,res){
-    scraper()
+    scraper(console.log())
     res.redirect('/home');
 });
 
