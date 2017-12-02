@@ -1,10 +1,18 @@
 //Pull all requirements
-var express = require('express');
-var router = express.Router();
-var path = require('path');
+const   express = require('express'),
+        router = express.Router(),
+        path = require('path'),
+        cheerio = require('cheerio'),
+        request = require('request'),
+        scraper = require('./scraper.js')
+
+if(scraper){
+    console.log("Scraper Loaded")
+}
 
 //Web page entry
 router.get('/', function(req,res){
+    scraper()
     res.redirect('/home');
 });
 

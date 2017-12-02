@@ -3,10 +3,8 @@ const   express = require("express"),
         methodOverride = require("method-override"),
         bodyParser = require("body-parser"),
         exphbs = require('express-handlebars'),
-        mongoose = require('mongoose'),
-        cheerio = require('cheerio'),
-        request = require('request'),
-        app = express();
+        app = express(),
+        mongoose = require('mongoose')
 
 
 // Set a route to serve static files (HTML, CSS, images, etc)
@@ -41,14 +39,23 @@ else {
         console.log("Connected in Development environment");
     });
 }
+
+//Set up Handlebars to use later
 app.use(methodOverride('_method'));
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
+
+
 app.set('view engine', 'handlebars');
 var routes = require('./controllers/controller.js');
 app.use('/', routes);
 
-console.log("App listening on port 3001")
 var PORT = 3001;
-app.listen(process.env.PORT || 3001);
+app.listen(process.env.PORT || 3001, function(){
+    if (process.env.PORT){
+        console.log(`App listening on ${process.env.PORT}`);
+    } else {
+        console.log(`App listening on 3001`);
+    }
+});
