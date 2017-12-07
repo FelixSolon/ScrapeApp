@@ -1,61 +1,60 @@
-//Declare all my requirements. On one line, kinda, because I'm stylish like that.
+//Require our NPM packages
 const   express = require("express"),
-        methodOverride = require("method-override"),
+        mongoose = require("mongoose"),
+        expressHandlebars = require("express-handlebars"),
         bodyParser = require("body-parser"),
-        exphbs = require('express-handlebars'),
+
+        //Set a port variable to either what Heroku uses, or 3000 if we're working on localhost.
+        PORT = process.env.PORT || 3000,
+        //for convenience/convention
         app = express(),
-        mongoose = require('mongoose')
+        router = express.Router();
 
+if (process.env.MONGODB_URI){
+    console.log("Working in Production!")
+} else {
+    //I want to work with my database off Heroku, so I can make sure things are working properly
+    //But I don't really want to expose the URI as it has the authentication in the string.
+    //Hence this.
+    const MongoURI = require("./mongoURI.js")
+}
 
-// Set a route to serve static files (HTML, CSS, images, etc)
-app.use('/public', express.static(__dirname + '/public'));
+//Actually start routing things
+require("./config/routes")(router);
+
+//Actually make it possible to render CSS/Images/Regular HTML/etc.
+app.use(express.static(__dirname + "/public"));
+
+//Use Handlebars. Because we need to use handlebars, probably because the Bootcamp hates us.
+app.engine("handlebars", expressHandlebars({
+  defaultLayout: "main"
+}));
+app.set("view engine", "handlebars");
+
+//Use BodyParser, because middleware and req.body is a nice thing.
 app.use(bodyParser.urlencoded({
-    extended: false
-}))
-
-//Allow Mongoose to use ES6 Promises.
-mongoose.Promise = Promise;
-//If running on Heroku, connect using that config variable.
-if(process.env.MONGODB_URI){
-    mongoose.connect(process.env.MONGODB_URI,
-    {
-        useMongoClient: true
-    },
-    function(){
-        //Callback function to make sure that things are working in Prod.
-        console.log("Connected in Production Environment");
-    });
-}
-//If running locally, connect using that same URL so I just have to care about one DB, but hidden in a config file that's included in my .gitignore file.
-//No using my Database for nefarious purposes. :-p    
-else {
-    const devURI = require("./config/dev.js");
-    mongoose.connect(devURI,
-    {
-        useMongoClient: true
-    },
-    function(){
-        //Callback function to make sure that things are working in Dev.
-        console.log("Connected in Development environment");
-    });
-}
-
-//Set up Handlebars to use later
-app.use(methodOverride('_method'));
-app.engine('handlebars', exphbs({
-    defaultLayout: 'main'
+  extended: false
 }));
 
+//Tell Express how to route things.
+app.use(router);
 
-app.set('view engine', 'handlebars');
-var routes = require('./controllers/controller.js');
-app.use('/', routes);
+//Tell Mongo to start talking to the server.
+const db = process.env.MONGODB_URI || MongoURI;
+mongoose.connect(db, function(error) {
+    //log errors if things go wrong.
+  if (error) {
+    console.log(error);
+  }
+  else {
+    //Give feedback that things are working.
+    console.log("mongoose connection is successful");
+  }
+});
 
-var PORT = 3001;
-app.listen(process.env.PORT || 3001, function(){
-    if (process.env.PORT){
-        console.log(`App listening on ${process.env.PORT}`);
-    } else {
-        console.log(`App listening on 3001`);
-    }
+//Let the user know that the server is running.
+//Not that I've EVER tried to troubleshoot before realizing things are fine and I forgot a console.log to let me know that.
+// >_>
+app.listen(PORT, function() {
+  console.log("Listening on port:" + PORT);
 });
